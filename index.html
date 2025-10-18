@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Skyblock Profit Tracker</title>
+  <title>Skyblock Shard Profit Tracker</title>
   <style>
     body { font-family: Arial; background: #111; color: #eee; text-align: center; }
     table { margin: 20px auto; border-collapse: collapse; width: 80%; }
@@ -11,24 +11,42 @@
   </style>
 </head>
 <body>
-  <h1>Skyblock Profit Tracker</h1>
+  <h1>Skyblock Shard Profit Tracker</h1>
   <table id="data">
-    <tr><th>Item</th><th>Buy Price</th><th>Sell Price</th><th>Volume</th><th>Profit</th></tr>
+    <tr><th>Shard</th><th>Buy Price</th><th>Sell Price</th><th>Volume</th><th>Profit</th></tr>
   </table>
 
   <script>
+    const romanMap = { "1":"I", "2":"II", "3":"III", "4":"IV", "5":"V" };
+    function humanizeItemCode(code) {
+      const parts = code.split("_");
+      const last = parts[parts.length-1];
+      const roman = romanMap[last];
+      if (roman) {
+        const nameParts = parts.slice(1, parts.length-1);
+        return nameParts.map(p => p.charAt(0)+p.slice(1).toLowerCase()).join(" ") + " " + roman;
+      } else {
+        const nameParts = parts.slice(1);
+        return nameParts.map(p => p.charAt(0)+p.slice(1).toLowerCase()).join(" ");
+      }
+    }
+
     async function loadData() {
       const res = await fetch("https://api.hypixel.net/skyblock/bazaar");
       const data = await res.json();
       const table = document.getElementById("data");
 
-      for (const [item, info] of Object.entries(data.products)) {
+      for (const [itemCode, info] of Object.entries(data.products)) {
+        // filter only shards
+        if (!itemCode.includes("SHARD")) continue;
+
         const buy = info.buy_summary[0]?.pricePerUnit || 0;
         const sell = info.sell_summary[0]?.pricePerUnit || 0;
         const vol = info.quick_status.buyMovingWeek || 0;
         const profit = (sell - buy).toFixed(2);
         if (profit > 0) {
-          const row = `<tr><td>${item}</td><td>${buy.toFixed(1)}</td><td>${sell.toFixed(1)}</td><td>${vol}</td><td>${profit}</td></tr>`;
+          const displayName = humanizeItemCode(itemCode);
+          const row = `<tr><td>${displayName}</td><td>${buy.toFixed(1)}</td><td>${sell.toFixed(1)}</td><td>${vol}</td><td>${profit}</td></tr>`;
           table.insertAdjacentHTML("beforeend", row);
         }
       }
