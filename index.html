@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Skyblock Profit Tracker</title>
+  <style>
+    body { font-family: Arial; background: #111; color: #eee; text-align: center; }
+    table { margin: 20px auto; border-collapse: collapse; width: 80%; }
+    th, td { border: 1px solid #444; padding: 8px; }
+    th { background: #222; }
+  </style>
+</head>
+<body>
+  <h1>Skyblock Profit Tracker</h1>
+  <table id="data">
+    <tr><th>Item</th><th>Buy Price</th><th>Sell Price</th><th>Volume</th><th>Profit</th></tr>
+  </table>
+
+  <script>
+    async function loadData() {
+      const res = await fetch("https://api.hypixel.net/skyblock/bazaar");
+      const data = await res.json();
+      const table = document.getElementById("data");
+
+      for (const [item, info] of Object.entries(data.products)) {
+        const buy = info.buy_summary[0]?.pricePerUnit || 0;
+        const sell = info.sell_summary[0]?.pricePerUnit || 0;
+        const vol = info.quick_status.buyMovingWeek || 0;
+        const profit = (sell - buy).toFixed(2);
+        if (profit > 0) {
+          const row = `<tr><td>${item}</td><td>${buy.toFixed(1)}</td><td>${sell.toFixed(1)}</td><td>${vol}</td><td>${profit}</td></tr>`;
+          table.insertAdjacentHTML("beforeend", row);
+        }
+      }
+    }
+    loadData();
+  </script>
+</body>
+</html>
