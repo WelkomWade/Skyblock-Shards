@@ -2,56 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Skyblock Shard Profit Tracker</title>
-  <style>
-    body { font-family: Arial; background: #111; color: #eee; text-align: center; }
-    table { margin: 20px auto; border-collapse: collapse; width: 80%; }
-    th, td { border: 1px solid #444; padding: 8px; }
-    th { background: #222; }
-  </style>
+  <title>Skyblock Fragment Profit Tracker</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Skyblock Shard Profit Tracker</h1>
-  <table id="data">
-    <tr><th>Shard</th><th>Buy Price</th><th>Sell Price</th><th>Volume</th><th>Profit</th></tr>
-  </table>
+  <header>
+    <h1>Fragment Profit Tracker</h1>
+    <div class="mode-toggle">
+      <button id="orderMode" class="active">Buy Order</button>
+      <button id="instantMode">Instant Buy</button>
+    </div>
+  </header>
 
-  <script>
-    const romanMap = { "1":"I", "2":"II", "3":"III", "4":"IV", "5":"V" };
-    function humanizeItemCode(code) {
-      const parts = code.split("_");
-      const last = parts[parts.length-1];
-      const roman = romanMap[last];
-      if (roman) {
-        const nameParts = parts.slice(1, parts.length-1);
-        return nameParts.map(p => p.charAt(0)+p.slice(1).toLowerCase()).join(" ") + " " + roman;
-      } else {
-        const nameParts = parts.slice(1);
-        return nameParts.map(p => p.charAt(0)+p.slice(1).toLowerCase()).join(" ");
-      }
-    }
+  <main>
+    <div id="loading">Loading bazaar data...</div>
+    <table id="fragmentTable" class="hidden">
+      <thead>
+        <tr>
+          <th>Fragment</th>
+          <th>Buy Price</th>
+          <th>Sell Price</th>
+          <th>Profit</th>
+          <th>Volume</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </main>
 
-    async function loadData() {
-      const res = await fetch("https://api.hypixel.net/skyblock/bazaar");
-      const data = await res.json();
-      const table = document.getElementById("data");
+  <footer>
+    <p>Data from Hypixel API • Updated live</p>
+  </footer>
 
-      for (const [itemCode, info] of Object.entries(data.products)) {
-        // filter only shards
-        if (!itemCode.includes("SHARD")) continue;
-
-        const buy = info.buy_summary[0]?.pricePerUnit || 0;
-        const sell = info.sell_summary[0]?.pricePerUnit || 0;
-        const vol = info.quick_status.buyMovingWeek || 0;
-        const profit = (sell - buy).toFixed(2);
-        if (profit > 0) {
-          const displayName = humanizeItemCode(itemCode);
-          const row = `<tr><td>${displayName}</td><td>${buy.toFixed(1)}</td><td>${sell.toFixed(1)}</td><td>${vol}</td><td>${profit}</td></tr>`;
-          table.insertAdjacentHTML("beforeend", row);
-        }
-      }
-    }
-    loadData();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
